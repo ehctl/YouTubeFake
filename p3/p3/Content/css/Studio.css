@@ -1,0 +1,121 @@
+﻿.body-container {
+    color: black;
+    height: calc(100vh - 50px);
+    display: flex;
+}
+
+/**
+    menu setup
+*/
+
+.menu-container{
+    width: 250px;
+    height: 100%;
+
+    background-color: #989393
+}
+
+.menu-item{
+    width: 100%;
+    height: 60px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px;
+    box-sizing: border-box;
+
+    border-bottom: solid 2px rgba(55, 52, 52, 0.83)
+}
+
+.menu-item img{
+    height: 100%;
+    margin-left: 10%;
+}
+
+.menu-item:hover{
+    background-color: rgba(246, 75, 75, 0.64);
+    cursor: pointer;
+}
+
+/**
+    detail container
+*/
+
+.detail-container{
+    flex-grow: 1;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/**
+    upload video 
+*/
+
+.upload-container{
+   width: 100%;
+}
+
+.uploadVideo {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.uploadVideo input{
+    margin: 0 0 10px 0;
+    align-self: flex-start;
+}
+
+.uploadVideo video{
+    width: 400px;
+    height: 400px;
+    margin: 10px;
+
+    background-color: black;
+}
+
+.add-tag-container{
+    height: 30px;
+    line-height: 30px;
+
+    display: flex;
+    align-items: center;
+}
+
+#addTag{
+    height: 100%;
+}
+
+#addTag:hover{
+    opacity: 0.8;
+}
+
+#tag-container{
+    display: flex;
+    flex-direction: column;
+}
+
+.tag-suggest-container {
+    display: flex;
+    flex-direction: column;
+    border: solid 1px #a5a3a3;
+    width: 30%;
+    margin: 5px 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tag-suggest{
+    padding: 10px;
+    background-color: #808080;
+    border-bottom: aliceblue 1px solid;
+    cursor: pointer;
+    color: white;
+    user-select: none;
+}
+
+    .tag-suggest:hover {
+        background-color: rgba(116, 111, 111, 0.67);
+    }

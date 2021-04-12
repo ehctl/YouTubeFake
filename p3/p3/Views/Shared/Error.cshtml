@@ -1,0 +1,28 @@
+﻿
+@{
+    ViewBag.Title = "Error";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>My Tube</title>
+    <link rel="stylesheet" href="~/Content/css/Home.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+</head>
+<body>
+    @Html.Partial("../Header")
+    <script>
+            console.log(@(ViewBag.error))
+    </script>
+    <div class="body-container">
+        <h2 style="color:red"> Page Error , f u hacker!</h2>
+
+        <h4>@ViewBag.error</h4>
+    </div>
+
+</body>
+</html>
+
+
+

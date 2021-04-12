@@ -1,0 +1,40 @@
+﻿.body-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    height: calc(100vh - 50px);
+}
+
+/* *login  register Form */
+.lr-form {
+    margin: 20px 0 0 0;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+}
+
+    .lr-form input, .lr-form button {
+        width: 70%;
+        margin: 20px 0 20px 0;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        font-size: 20px;
+        background-color: rgb(247, 246, 244);
+
+        box-sizing: border-box;
+    }
+
+    .lr-form button {
+        background-color: rgb(175, 161, 161);
+        width: 100%;
+        outline: none;
+        cursor: pointer;
+    }
+
+.loading-image{
+    height: 50px;
+}

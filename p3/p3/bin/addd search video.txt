@@ -1,0 +1,128 @@
+        @if (!data.IsEnd)
+        {
+            <button id="btnLoadMore" class="btn-loadmore">Load more</button>
+            <script src="~/Content/js/Helper.js"></script>
+            <script>                    
+                let videoList = document.querySelector('.video-list-container');
+                let btnLoadMore = document.querySelector('#btnLoadMore');
+                let p1_index = '@(data.Part1Index)';
+                let p2_index = '@(data.Part2Index)';
+                let isEnd = false;
+
+                let addVideoElement = (video) => {
+
+                    let videoContainer = document.createElement('div');
+                    videoContainer.classList.add('video-container');
+
+                    let videoThumbnail = document.createElement('div');
+                    videoThumbnail.classList.add('video-thumbnail');
+                    let aLinkThumnail = document.createElement('a');
+                    aLinkThumnail.href = "watch?v=" + video.Video.Id;
+
+                    let imageThumbnail = document.createElement('img');
+                    imageThumbnail.src = "/Video_Uploaded/" + video.Video.Id +"/thumbnail_1.jpg"
+
+                    let videoLength = document.createElement('div');
+                    videoLength.classList.add('video-length');
+
+                    videoThumbnail.appendChild(aLinkThumnail);
+                    videoThumbnail.appendChild(videoLength);
+                    aLinkThumnail.appendChild(imageThumbnail);
+
+                    let videoToTheRight = document.createElement('div');
+                    videoToTheRight.classList.add('video-to-the-right');
+
+                    let aToTheRight = document.createElement('a');
+                    aToTheRight.href = aLinkThumnail.href;
+
+                    let videoTitle = document.createElement('div');
+                    videoTitle.classList.add('video-title');
+                    videoTitle.innerHTML = video.Video.Title;
+
+                    let videoViewnTime = document.createElement('div');
+                    videoViewnTime.classList.add('video-viewntime');
+
+                    let spanView = document.createElement('span');
+                    spanView.innerHTML = calculateView(video.Video.View);
+                    let spanDot = document.createElement('span');
+                    spanDot.innerHTML = ' • ';
+                    let spanDay = document.createElement('span');
+                    spanDay.innerHTML = calculateDay(convertToDate(video.Video.Created_date));
+
+                    videoToTheRight.appendChild(aToTheRight);
+                    aToTheRight.appendChild(videoTitle);
+                    aToTheRight.appendChild(videoViewnTime);
+                    videoViewnTime.appendChild(spanView);
+                    videoViewnTime.appendChild(spanDot);
+                    videoViewnTime.appendChild(spanDay);
+
+                    let aChannel = document.createElement('a');
+                    aChannel.href = '/channel?id=' + video.Channel_id;
+
+                    let channel = document.createElement('div');
+                    channel.classList.add('channel');
+
+                    let imageChannel = document.createElement('img');
+                    imageChannel.classList.add('channel-avatar');
+                    imageChannel.src = "/Content/image/" + video.Channel_avatar;
+
+                    let channelName = document.createElement('div');
+                    channelName.classList.add('channel-name');
+                    channelName.innerHTML = video.Channel_name;
+
+                    videoToTheRight.appendChild(aChannel);
+                    aChannel.appendChild(channel);
+                    channel.appendChild(imageChannel);
+                    channel.appendChild(channelName);
+
+                    let aVideoDescription = document.createElement('a');
+                    aVideoDescription.href = aLinkThumnail.href;
+
+                    let videoDescription = document.createElement('div');
+                    videoDescription.classList.add('video-description');
+                    videoDescription.innerHTML = video.Video.Description;
+
+                    videoToTheRight.appendChild(aVideoDescription);
+                    aVideoDescription.appendChild(videoDescription);
+
+                    videoContainer.appendChild(videoThumbnail);
+                    videoContainer.appendChild(videoToTheRight);
+
+                    videoList.appendChild(videoContainer);
+                }
+
+                btnLoadMore.addEventListener('click', () => {
+                    let xml = new XMLHttpRequest();
+                    xml.onreadystatechange = function (){
+                        if(this.readyState == 4) {
+                            switch (this.status) {
+                                case 200: {
+                                    let data = JSON.parse(this.response);
+                                    console.log(data);
+
+                                    for (let i = 0; i < data.VideoList.length; i++) {
+                                        p1_index = data.Part1Index;
+                                        p2_index = data.Part2Index;
+
+                                        addVideoElement(data.VideoList[i])
+                                    }
+
+                                    if (data.IsEnd) {
+                                        btnLoadMore.style.display = 'none';
+                                    }
+
+                                    break;
+                                }
+                                case 400: {
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    xml.open('GET', '/search/moreVideo?query=@(ViewBag.query)&p1_index='+p1_index+'&p2_index='+p2_index);
+                    xml.send();
+                });
+            </script>
+        }

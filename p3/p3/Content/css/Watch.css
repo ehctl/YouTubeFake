@@ -1,0 +1,327 @@
+﻿.body-container {
+    position: relative;
+    color: black;
+    height: calc(100vh - 50px);
+    display: flex;
+    justify-content: center;
+}
+
+.stream-container {
+    height: 100%;
+    display: flex;
+    flex-flow: row;
+    flex-direction: column;
+
+    margin: 10px 0 0 0;
+}
+
+/**
+    Video css
+*/
+.video-fullscreen {
+    display: flex;
+    flex-flow: row;
+    height: 100%;
+    background-color: black;
+    outline: none;
+}
+
+.video-container {
+    position: relative;
+    width: 60%;
+    height: 60%;
+    background: none;
+    outline: none;
+    background-color: black;
+}
+
+/** center component container */
+.center-component-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    pointer-events: none;
+}
+
+    .center-component-container img {
+        height: 50px;
+        width: 50px;
+    }
+
+#center-image {
+    display: none;
+}
+
+#video {
+    margin: auto;
+    height: 100%;
+}
+
+.again {
+    position: relative;
+    top: -70%;
+    left: 40%;
+    display: none;
+}
+
+    .again i {
+        color: white;
+        font-size: 80px
+    }
+
+.again1 {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+}
+
+    .again1 i {
+        color: white;
+        font-size: 80px
+    }
+
+.control-bar {
+    position: relative;
+    top: -10%;
+    height: 8%;
+    width: 98%;
+    margin: auto;
+}
+
+.control-bar1 {
+    position: fixed;
+    bottom: 1%;
+    height: 5%;
+    left: 1%;
+    right: 1%;
+}
+
+#flex-bar {
+    display: flex;
+    flex-flow: row;
+    width: 100%;
+    height: 100%;
+}
+
+    #flex-bar img {
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none;
+        height: 90%;
+    }
+
+#play-pause {
+    justify-self: end;
+}
+
+#timer {
+    color: white;
+    justify-self: center;
+    align-self: center;
+    padding: 5% 0 5% 0;
+}
+
+#fullscreen {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+#progress {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    background-color: rgb(59, 56, 56);
+    display: flex;
+}
+
+    #progress:hover {
+        cursor: pointer;
+        background-color: rgb(100, 100, 100);
+    }
+
+#time-hint {
+    position: absolute;
+    color: white;
+    top: -20px;
+    font-size: 15px;
+    height: 5px;
+    width: 5px;
+}
+
+#volume-bar {
+    margin: 0 15px 0 10px;
+}
+
+#bar {
+    position: relative;
+    height: 5px;
+    width: 0%;
+    background-color: red;
+    z-index: 2;
+}
+
+#loading-bar {
+    position: absolute;
+    height: 5px;
+    width: 0%;
+    background-color: rgb(175, 172, 172);
+}
+
+#rest {
+    flex-grow: 1;
+}
+
+img:hover {
+    cursor: pointer;
+}
+
+
+/** */
+.video-title{
+    font-size: 20px;
+    margin: 5px 0;
+}
+
+.video-uploaded-date , .video-view {
+    font-size: 16px;
+    color: #808080;
+}
+
+.channel {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    border-bottom: solid 1px rgb(230 230 229);
+    border-top: solid 1px rgb(230 230 229);
+    padding: 10px 0;
+}
+
+.channel-left-side{
+    width: 80%;
+
+    display: flex;
+}
+
+.channel-avatar{
+    width: 40px;
+    height: 40px;
+}
+
+.channel-sub {
+    color: #808080;
+    margin: 5px 0 20px 0;
+}
+
+.subscribe-button{
+    border: solid 3px #84d1ee;
+    border-radius: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+    outline: none;
+    color: white;
+    font-size: 20px;
+    width: 30%;
+    text-align: center;
+    background-color: rgba(233, 60, 76, 0.62);
+    cursor: pointer;
+
+    align-self:start;
+}
+
+    .subscribe-button:hover {
+        background-color: rgba(239, 44, 62, 0.86);
+    }
+
+.video-description{
+    white-space: pre-wrap;
+}
+
+/** phan comment cua video */
+.video-comment-container{
+    width: 100%;
+    height: 200px;
+}
+
+.comment-count{
+    margin: 20px 0;
+}
+
+.user-comment-container{
+    display:flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.user-comment-container img{
+    height: 100%;
+}
+
+.btn-comment{
+    border:none;
+    outline:none;
+
+    font-size: 15px;
+
+    padding: 20px;
+    margin: 5px;
+    border-radius: 10px 5px;
+    cursor: pointer;
+}
+
+.btn-comment:hover{
+    background-color: #7ab7de;
+}
+
+.input-comment {
+    width: 100%;
+    border: none;
+    border-bottom: solid 1px rgb(230 230 229);
+    padding: 5px 10px;
+    outline: none;
+
+    font-size: 15px;
+}
+
+.comment {
+    display: flex;
+    padding: 20px 0 10px 0;
+}
+
+.comment:hover{
+    background-color: rgba(219, 215, 215, 0.40);
+}
+
+.comment-owner-avatar{
+}
+
+.comment-detail{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .comment-detail div {
+        margin: 0 0 10px 10px;
+    }
+
+.comment-owner-name{
+    font-size: 14px;
+    font-weight: 560;
+    margin: 0 10px 0 0;
+}
+
+.comment-time{
+    font-size: 14px;
+}
+
+.comment-content {
+}

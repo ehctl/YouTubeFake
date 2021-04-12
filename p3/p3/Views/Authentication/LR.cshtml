@@ -1,0 +1,164 @@
+﻿
+@{
+    ViewBag.Title = "Login";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>MyTube</title>
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <link rel="stylesheet" href="~/Content/css/LR.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+</head>
+<body>
+    @Html.Partial("../Header")
+
+    <div class="body-container">
+        @if (ViewBag.op == "REGISTER")
+        {
+            <form id="register" class='lr-form' method="POST" action="/authentication/register" >
+                <input type="hidden" name="op" value="register">
+                <input name='username' id='username' type="text" placeholder="Username" pattern="[a-zA-z0-9 ]{1,15}" required>
+                <input name='password' id='password' type='password' placeholder="Password" required />
+                <input id='confirm-password' type='password' placeholder="Confirm Password" required />
+                <input name='email' id='mail' type='email' placeholder="Mail" pattern="^[a-z0-9._%+-]+@("@")[a-z0-9.-]+\.[a-z]{2,}$" required />
+                <input name="firstname" id="firstname" type="text" placeholder="First name" required />
+                <input name="lastname" id="lastname" type="text" placeholder="Last name" required />
+                <input name="birthdate" id="birthdate" type="text" placeholder="Birth Date" onfocus="this.type='date'" onfocusout="( this.type = 'text')" required>
+
+                <button class='btn-login'> Register</button>
+            </form>
+
+            <a href="/authentication/login">You have an account? Login</a>
+            <script>
+                let form = document.querySelector("#register");
+                link = "/authentication/register";
+                let loadingImage = document.createElement('img');
+                loadingImage.classList.add("loading-image");
+                loadingImage.src = "/Content/image/loading.gif";
+
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+
+                    form.appendChild(loadingImage);
+
+                    let username = document.querySelector('#username').value;
+                    let password = document.querySelector('#password').value;
+                    let email = document.querySelector('#mail').value;
+                    let firstName = document.querySelector('#firstname').value;
+                    let lastName = document.querySelector('#lastname').value;
+                    let birthDate = document.querySelector('#birthdate').value;
+
+                    let ajax = new XMLHttpRequest();
+
+                    ajax.onreadystatechange = function () {
+                        if (this.readyState == 4) {
+                            form.removeChild(loadingImage);
+
+                            switch (this.status) {
+                                case 200: {
+                                    alert(this.response);
+                                    break;
+                                }
+                                // ko du thong tin
+                                case 400: {
+                                    alert("Error occur! Try again later");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    let data = new FormData();
+                    data.append('username', username);
+                    data.append('password', password);
+                    data.append('email', email);
+                    data.append('firstname', firstName);
+                    data.append('lastname', lastName);
+                    data.append('birthdate', birthDate);
+                    console.log(username, password, email, firstName, lastName, birthDate);
+                    ajax.open("POST", link, true);
+                    ajax.send(data);
+                })
+
+
+            </script>
+        }
+        else
+        {
+            <form id="login" action='user' class='lr-form' method="post">
+                <input type="hidden" name="op" value="login">
+                <input name='username' id='username' type="text" placeholder="Username" pattern="[a-zA-z0-9]{1,15}" required>
+                <input name='password' id='password' type='password' placeholder="Password" required />
+                <button class='btn-login'> Login</button>
+                <p class="warning"></p>
+            </form>
+
+            <a href="/authentication/register">You dont have an account? Register</a>
+            <script>
+                let returnUrl = null;
+            </script>
+            if (ViewBag.returnUrl != null)
+            {
+                <script>
+                    returnUrl = '@(ViewBag.returnUrl)';
+                </script>
+            }
+            <script>
+                let form = document.querySelector("#login");
+                link = "/authentication/login";
+                let loadingImage = document.createElement('img');
+                loadingImage.classList.add("loading-image");
+                loadingImage.src = "/Content/image/loading.gif";
+
+                form.addEventListener('submit', (e) => {
+                    form.appendChild(loadingImage);
+
+                    let username = document.querySelector('#username').value;
+                    let password = document.querySelector('#password').value;
+
+                    let ajax = new XMLHttpRequest();
+
+                    ajax.onreadystatechange = function () {
+                        if (this.readyState == 4) {
+                            form.removeChild(loadingImage);
+
+                            switch (this.status) {
+                                case 200: {
+                                    returnUrl = returnUrl == null ? "/" : returnUrl;
+                                    window.location.href = returnUrl;
+                                    break;
+                                }
+                                case 412: {
+                                    alert("Your account havent actived yet ! Please click on the link we ve sent to your email !");
+                                    break;
+                                }
+                                case 203: {
+                                    alert("Username or password incorect");
+                                    break;
+                                }
+                                case 400: {
+                                    alert("Error occur! Try again later");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    ajax.open("POST", link, true);
+                    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    ajax.send("username=" + username + "&password=" + password);
+
+                    e.stopPropagation();
+                    e.preventDefault();
+                })
+
+
+            </script>
+        }
+    </div>
+</body>
+</html>
+
+

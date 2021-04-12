@@ -1,0 +1,251 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>MyTube</title>
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <link rel="stylesheet" href="~/Content/css/Watch.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+    <script src="~/Content/js/jquery-3.4.1.slim.min.js"></script>
+    <script src="~/Content/js/Helper.js"></script>
+</head>
+<body>
+    @Html.Partial("../Header")
+    @{ 
+        p3.Models.WatchData data = ViewBag.watchElement;
+    }
+    <div class="body-container">
+        <div class="stream-container">
+            <div id='video-container' class='video-container' tabindex="0">
+                <video id='video' muted>
+                </video>
+                <div id='control-bar' class='control-bar'>
+                    <div id='progress'>
+                        <div id='time-hint'></div>
+                        <div id='bar'></div>
+                        <div id='loading-bar'></div>
+                    </div>
+                    <div id='flex-bar'>
+                        <img id='play-pause' src='~/Content/image/pause.png'>
+                        <img id='volume-image' src='~/Content/image/highVolume.png'>
+                        <input type="range" id='volume-bar' min='0' max='100' step='1'>
+                        <div id="timer"></div>
+                        <img id='fullscreen' src="~/Content/image/fullscreen.png">
+                    </div>
+                </div>
+                <div class="center-component-container">
+                    <img id='center-image'>
+                </div>
+            </div>
+            <div class="video-title"> @(data.Video.Title) </div>
+            <div class="video-viewndate">
+                <span class="video-view">@( p3.Controllers.Helper.CalculateView(data.Video.View)) </span>
+                <span> • </span>
+                <span class="video-uploaded-date">  @(data.Video.Created_date) </span>
+            </div>
+            <div class="channel">
+                <div class="channel-left-side">
+                    <a href="channel?id=@(data.User.Id)"> <img class="channel-avatar" src="~/Content/image/@(data.User.Avatar)" /></a>
+                    <div>
+                        <a href="channel?id=@(data.User.Id)"> <div class="channel-name">@(data.User.Channel_name )</div> </a>
+                        <div class="channel-sub"> @(data.User.Subscriber) subscribers </div>
+                        @if (data.Video.Description.Length > 300)
+                        {
+                            data.Video.Description = data.Video.Description.Substring(0, 300) + "...";
+                        }
+                        <div class="video-description"> @(data.Video.Description)</div>
+                    </div>
+                </div>
+                @if (Session["userID"] == null)
+                {
+                    <a class="subscribe-button" href="/authentication/login?return_url=/watch?v=@(data.Video.Id)"> Subscribe </a>
+                }
+                else
+                {
+                    if (((int)Session["userID"] != data.Video.Owner_id))
+                    {
+                        if (data.IsSubscriber)
+                        {
+                            <div class="subscribe-button"> Unsubscribe </div>
+                        }
+                        else
+                        {
+                            <div class="subscribe-button"> Subscribe </div>
+                        }
+
+                        <script>
+                            let btnSubscribe = document.querySelector(".subscribe-button");
+                            let subCount = document.querySelector(".channel-sub");
+                            let isSubscribe = @(data.IsSubscriber.ToString().ToLower());
+                            let subscriber = @(data.User.Subscriber);
+
+                            btnSubscribe.addEventListener('click', () => {
+                                var xml = new XMLHttpRequest();
+                                xml.onreadystatechange = function () {
+                                    if (this.readyState == 4) {
+                                        switch (this.status) {
+                                            case 200: {
+                                                isSubscribe = !isSubscribe;
+                                                btnSubscribe.innerHTML = isSubscribe ? "Unsubscribe" : "Subscribe";
+                                                subscriber += isSubscribe ? 1 : -1;
+                                                subCount.innerHTML = subscriber + ' subscribers';
+                                                break;
+                                            }
+                                            case 400: {
+
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                xml.open('GET', "/channel/subscribe?c_id=@(data.User.Id)"+ "&op=" + (isSubscribe ? "unsubscribe" : "subscribe") );
+                                xml.send();
+                            })
+                        </script>
+                    }
+                }
+            </div>
+       
+            <div class="video-comment-container">
+                <div class="comment-count">
+                    @(data.Video.Comment) comment
+                </div>
+                @if (Session["userID"] != null)
+                {
+                    <div class="user-comment-container">
+                        <img class="channel-avatar" src="~/Content/image/@(data.User.Avatar)" />
+                        <input class="input-comment" id="inputComment" type="text" placeholder="Add a comment..." />
+                        <button class="btn-comment" id="btnComment">Comment</button>
+                    </div>
+                }
+                <div class="video-comment">
+                    @foreach (var comment in data.Comments)
+                    {
+                        <div class="comment">
+                            <a href="channel?id=@(comment.OwnerID)"> <img class="comment-owner-avatar , channel-avatar" src="~/Content/image/@(comment.OwnerAvatar)" /> </a>
+                            <div class="comment-detail">
+                                <div>
+                                    <a href="channel?id=@(comment.OwnerID)"><span class="comment-owner-name">@(comment.OwnerName)</span></a>
+                                    <span class="comment-time">@(p3.Controllers.Helper.CalculateDay(comment.Comment.Created_at))</span>
+                                </div>
+                                <div class="comment-content">@(comment.Comment.Comment)</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (Session["userID"] != null)
+                {
+                    <script>
+                        let commentCount = @(data.Video.Comment);
+                        let btnComment = document.querySelector('#btnComment');
+                        let inputComment = document.querySelector('#inputComment');
+                        let lbCommentCount = document.querySelector('.comment-count');
+
+                        let addComment = ( data ) => {
+                            let commentContainer = document.querySelector('.video-comment');
+
+                            let comment = document.createElement('div');
+                            comment.classList.add('comment');
+
+                            let aCommentOwnerAvatar = document.createElement('a');
+                            aCommentOwnerAvatar.href = "channel?id=" + data.OwnerID;
+
+                            let commentOwnerAvatar = document.createElement('img');
+                            commentOwnerAvatar.classList.add('comment-owner-avatar');
+                            commentOwnerAvatar.classList.add('channel-avatar');
+                            commentOwnerAvatar.src = "/Content/image/@(Session["avatar"])";
+
+                            let commentDetail = document.createElement('div');
+                            commentDetail.classList.add('comment-detail');
+
+                            let div1 = document.createElement('div');
+
+                            let aCommentOwnerName = document.createElement("a");
+                            aCommentOwnerName.href = "channel?id=" + data.OwnerID;
+
+                            let commentOwnerName = document.createElement('span');
+                            commentOwnerName.classList.add('comment-owner-name');
+                            commentOwnerName.innerHTML = '@(Session["username"])';
+
+                            let commentTime = document.createElement('span');
+                            commentTime.classList.add('comment-time');
+                            commentTime.innerHTML = calculateDay(Date.now());
+
+                            let commentContent = document.createElement('div');
+                            commentContent.classList.add('comment-content');
+                            commentContent.innerHTML = data.Comment.Comment;
+
+                            commentContainer.insertBefore(comment, commentContainer.firstChild);
+                            comment.appendChild(aCommentOwnerAvatar);
+                            aCommentOwnerAvatar.append(commentOwnerAvatar)
+
+                            comment.appendChild(commentDetail);
+                            commentDetail.appendChild(div1);
+                            div1.appendChild(aCommentOwnerName);
+                            aCommentOwnerName.appendChild(commentOwnerName)
+                            div1.appendChild(commentTime);
+                            commentDetail.appendChild(commentContent);
+
+                            commentCount += 1;
+                            lbCommentCount.innerHTML = commentCount + ' comments';
+                        }
+
+                    </script>
+                    <script>
+                        btnComment.addEventListener('click', () => {
+                        let comment = inputComment.value.trim();
+                        if ( comment.length > 0) {
+                            let xml = new XMLHttpRequest();
+                            xml.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    switch (this.status) {
+                                        case 200: {
+                                            inputComment.value = "";
+                                            addComment({
+                                                OwnerID: @(Session["userID"]) ,
+                                                Comment: {
+                                                    Comment: comment,
+                                                }
+                                                    
+                                            });
+                                            break;
+                                        }
+                                        case 400: {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            let form = new FormData();
+                            form.append('video_id', '@(data.Video.Id)');
+                            form.append('comment', comment);
+
+                            xml.open('POST', 'watch/add_comment');
+                            xml.send(form);
+                        }
+                    })
+                    </script>
+                }
+                </div>
+            <script>
+                let name = '@data.Video.Id';
+                let type = 'video';
+                let defaultTime = @(ViewBag.defaultTime);
+            </script>
+            <script src="~/Content/js/Video.js"></script>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+

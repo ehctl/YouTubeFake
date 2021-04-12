@@ -1,0 +1,199 @@
+﻿.body-container {
+    margin: 0 10% 0 10%;
+    color: black;
+    height: calc(100vh - 50px);
+}
+
+.channel-header{
+    width: 100%;
+    height: 300px;
+
+    display:flex;
+    justify-content:center;
+
+    background-color: #6f6b6b
+}
+
+.channel-backgroundimage{
+    height: 100%;
+}
+
+.channel-info{
+    height: 100px;
+
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.channel-info-left {
+    display: flex;
+}
+
+.channel-avatar {
+    border-radius: 30px;
+    width: 90px;
+}
+
+.channel-namensub{
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
+
+.channel-name{
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 3rem;
+}
+
+.channel-sub {
+    font-size: 18px;
+    color: #808080;
+}
+
+.subscribe-button{
+    border: solid 3px #84d1ee;
+    border-radius: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+    outline: none;
+   
+    color: white;
+    font-size: 20px;
+    width: 30%;
+    height: 60%;
+    text-align: center;
+
+    background-color: rgba(233, 60, 76, 0.62);
+    cursor:pointer;
+
+    margin: 0 20px;
+}
+
+    .subscribe-button:active, .subscribe-button:focus {
+        outline: none;
+    }
+
+    .subscribe-button:hover {
+        background-color: rgba(239, 44, 62, 0.86);
+    }
+
+.channel-description {
+    width: 100%;
+}
+
+    .channel-description div {
+        color: #585555;
+        text-align: center;
+        font-size: 16px;
+    }
+
+.video-container {
+    height: 90%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.video-element {
+    position: relative;
+    width: 350px;
+    height: 300px;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+}
+
+.video-thumbnail {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    box-sizing: border-box;
+    display: flex;
+    background-color: black;
+}
+
+    .video-thumbnail a {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .video-thumbnail a img {
+            height: 90%;
+            background-color: rgba(83, 80, 80, 0.50);
+        } 
+
+
+.watch-time-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0px;
+    height: 4px;
+    background-color: red;
+}
+
+.video-length{
+    position:absolute;
+    right: 5px;
+    bottom: 5px;
+    color: white;
+    background-color: black;
+}
+
+.video-info {
+    display: flex;
+    margin: 5px 0 0 0;
+    width: 100%;
+}
+
+.video-onwer-avatar {
+    width: 20%;
+    align-self: flex-start;
+    border-radius: 30px;
+}
+
+.video-detail {
+}
+
+.video-title {
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+/** 
+    css cho channel owner section
+*/
+.channel-owner-section{
+    display: flex;
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    margin: 20px 0 20px 0;
+}
+
+.channel-owner-section button{
+    margin: 0 10px 0 0;
+}
+
+.channel-subscribe-btn {
+    border: solid 3px #84d1ee;
+    border-radius: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+    outline: none;
+    color: white;
+    font-size: 20px;
+    width: 30%;
+    text-align: center;
+    background-color: rgba(233, 60, 76, 0.62);
+    cursor: pointer;
+}
+
+    .channel-subscribe-btn:hover {
+        background-color: rgba(239, 44, 62, 0.86);
+    }

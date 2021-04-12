@@ -1,0 +1,134 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>MyTube</title>
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <link rel="stylesheet" href="~/Content/css/Channel.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+</head>
+<body>
+    @Html.Partial("../Header")
+
+    @{ 
+        p3.Models.ChannelData channel = ViewBag.channel;
+    }
+    <div class="body-container">
+        <div class="channel-header">
+            <img class="channel-backgroundimage" src="~/Content/image/@(channel.User.Background_image)" />
+        </div>
+        <script>
+            let subscriber = @(channel.User.Subscriber);
+        </script>
+        <div class="channel-info">
+            <div class="channel-info-left">
+                <img class="channel-avatar" src="~/Content/image/@(channel.User.Avatar)" />
+                <div class="channel-namensub">
+                    <div class="channel-name"> @(channel.User.Channel_name)</div>
+                    <div class="channel-sub">@channel.User.Subscriber subscribers</div>
+                </div>
+            </div>
+
+            @if (Session["userID"] != null)
+            {
+                if ((int)Session["userID"] != channel.User.Id)
+                {
+                    <button class="subscribe-button">
+                        @( channel.IsSubscriber ? "Unsubscribe" : "Subscribe")
+                    </button>
+                    <script>
+                        let btnSubscribe = document.querySelector(".subscribe-button");
+                        let subCount = document.querySelector(".channel-sub");
+                        let isSubscribe = @(channel.IsSubscriber.ToString().ToLower());
+
+                        btnSubscribe.addEventListener('click', () => {
+                            var xml = new XMLHttpRequest();
+                            xml.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    switch (this.status) {
+                                        case 200: {
+                                            isSubscribe = !isSubscribe;
+                                            btnSubscribe.innerHTML = isSubscribe ? "Unsubscribe" : "Subscribe";
+                                            subscriber += isSubscribe ? 1 : -1;
+                                            subCount.innerHTML = subscriber + ' subscribers';
+                                            break;
+                                        }
+                                        case 400: {
+
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            xml.open('GET', "/channel/subscribe?c_id=@(channel.User.Id)"+ "&op=" + (isSubscribe ? "unsubscribe" : "subscribe") );
+                            xml.send();
+                        })
+                    </script>
+                }
+            }
+            else
+            {
+                <a class="channel-subscribe-btn" href="/authentication/login"> Subscribe </a>
+            }
+        </div>
+        <div class="channel-description">
+            <div> @(channel.User.Description) </div>
+        </div>
+
+        @if (Session["userID"] != null)
+        {
+
+            if ((int)Session["userID"] == channel.User.Id)
+            {
+                <div class="channel-owner-section">
+                    <a class="subscribe-button" href="/studio?p_index=0">
+                        See stats
+                    </a>
+                    <a class="subscribe-button" href="/studio?p_index=1">
+                        Upload Video
+                    </a>
+                </div>
+            }
+        }
+        <div class="video-container">
+            @foreach (var video in channel.VideoList)
+            {
+
+                string duration = p3.Controllers.Helper.CalculateDuration(video.Video.Duration);
+                string view = p3.Controllers.Helper.CalculateView(video.Video.View);
+                string day = p3.Controllers.Helper.CalculateDay(video.Video.Created_date);
+                <div class="video-element">
+                    <div class="video-thumbnail">
+                        @{
+                            string watchLink = "watch?v=" + video.Video.Id + ((video.Watch_time != 0) ? "&t=" + video.Watch_time : "");
+                        }
+                        <a href="@(watchLink)"><img style="width:100%" src="~/Video_Uploaded/@(video.Video.Id)/thumbnail_1.jpg" /></a>
+                        @if (video.Watch_time != 0)
+                        {
+                            <div class="watch-time-bar" style="width:@( (video.Watch_time * 1.001/video.Video.Duration) * 100 + "%")"></div>
+                        }
+                        <div class="video-length">@(duration)</div>
+
+                    </div>
+
+                    <div class="video-info">
+                        <a href="channel?id=@channel.User.Id" class="video-onwer-avatar"><img style="width:100%;border-radius:30px" src="~/Content/image/@(channel.User.Avatar)" /> </a>
+                        <div class="video-detail">
+                            <a href="watch?v=@video.Video.Id"> <div class="video-title">@(video.Video.Title)</div></a>
+                            <a href="channel?id=@channel.User.Id" class="video-owner" >@(channel.User.Channel_name)</a>
+                            <div class="video-timenview">@view • @day </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>
+

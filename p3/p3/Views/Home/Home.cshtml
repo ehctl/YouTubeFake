@@ -1,0 +1,608 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>My Tube</title>
+    <link rel="stylesheet" href="~/Content/css/Home.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <script src="~/Content/js/Helper.js"></script>
+
+</head>
+<body>
+    @Html.Partial("../Header")
+    @{ 
+        p3.Models.HomeData data = ViewBag.HomeData;
+    }
+    <div class="body-container">
+        <div class="left">
+            <img id="left-img" src="~/Content/image/left.png" />
+        </div>
+        <script>
+            var btnOptionClick = (dropdown_id) => {
+                let dropdown = document.querySelector('#' + dropdown_id);
+                dropdown.style.display = dropdown.style.display == "none" ? "flex" : "none";
+
+                event.stopPropagation();
+            }
+
+            var btnPlaylistClick = (video_id) => {
+                let apiURL = "studio/check_playlist?&v_id=" + video_id;
+
+                ApiCall(apiURL, "GET")
+                    .then( (r) => {
+                        response = JSON.parse(r);
+                        let url;
+                        if (response.isInPlayList) {
+                            if (confirm("Your already add this video to your playlist ? Are u want to remove it ?")) {
+                                url = "studio/playlist?op=remove&v_id=" + video_id;
+                                ApiCall(url, "GET")
+                                    .then((reponse) => {
+                                        alert("Remove video from playlist successful");
+                                    })
+                                    .catch((e) => {
+                                        console.log(e);
+                                    })
+                            } 
+                        } else {
+                            if (confirm("This video not in your playlist ? You want to add it ?")) {
+                                url = "studio/playlist?op=add&v_id=" + video_id;
+                                ApiCall(url, "GET")
+                                    .then((reponse) => {
+                                        alert("Add video to playlist successful");
+                                    })
+                                    .catch((e) => {
+                                        console.log(e);
+                                    })
+                            } 
+                        }
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                    })
+            }
+
+            var btnHideVideoClick = (event,video_id) => {
+                let videoNode = document.querySelector('#v_' + video_id);
+                let vContainer = document.querySelector('.video-container');
+                vContainer.removeChild(videoNode);
+
+                event.stopPropagation();
+            }
+
+            var isSecondaryPageLoaded = false;
+        </script>
+        <div class="main-container">
+            @{
+                if (ViewBag.info != null)
+                {
+                    <h5 style="color:blue">@(ViewBag.info)</h5>
+                }
+            }
+            <div class="recommended-container">
+                <div class="tag-container">
+                    <div id='t0' class="tag-element"> All </div>
+                    <div id='t1' class="tag-element"> Popular </div>
+
+                    @{
+                        foreach (p3.Models.UserTag item in data.favoriteTagList)
+                        {
+                            <div id='@("t"+item.Id)' class="tag-element"> @(item.Name) </div>
+                        }
+                    }
+                </div>
+                <script>
+                    let list = document.querySelectorAll('.tag-element');
+                    let currentTagId = 0;
+                    let currentIndex = 0;
+                    let loadingImg = document.createElement('img');
+                    let videoList = [];
+
+                    loadingImg.src = '/Content/image/loading.gif';
+                    loadingImg.style.height = "50px";
+
+                    for (let i = 0; i < list.length; i++) {
+                        list[i].addEventListener('click', (e) => {
+                            let tagId = Number.parseInt(e.target.id.slice(1));
+                            if (tagId != currentTagId) {
+                                e.target.classList.add('current-tag');
+                                let prevCurrTag = document.querySelector('#t' + currentTagId);
+                                if (prevCurrTag)
+                                    prevCurrTag.classList.remove("current-tag");
+                                currentTagId = tagId;
+
+                                fetchVideoList(tagId);
+                            }
+                        })
+                    }
+
+                    let fetchVideoList = (tagID) => {
+                        clearPage();
+
+                        let URL = '/home/get_by_tag?t_id=' + tagID;
+                        ApiCall(URL, 'GET')
+                            .then((response) => {
+                                let list = JSON.parse(response);
+                                console.log(list);
+                                videoList = list.VideoList.map(v => v.Video.Id);
+                                currentIndex = videoList.length;
+                                loadTagPage(list);
+                            })
+                            .catch((err) => {
+
+                            })
+                    }
+
+                    let clearPage = () => {
+                        let videoContainer = document.querySelector('#video-container-p1');
+                        while (videoContainer.firstChild) {
+                            videoContainer.removeChild(videoContainer.lastChild);
+                        }
+                        videoContainer.appendChild(loadingImg);
+                    }
+
+                    let loadTagPage = (list) => {
+                        let videoContainer = document.querySelector('#video-container-p1');
+                        videoContainer.removeChild(loadingImg);
+
+                        for (let i = 0; i < list.VideoList.length; i++) {
+                            console.log('??')
+                            addVideoElement(list.VideoList[i], videoContainer);
+
+                        }
+
+                        if (!list.IsEnd) {
+                            let btnLoadMore = document.createElement('button');
+                            btnLoadMore.classList.add('btn-loadmore');
+                            btnLoadMore.addEventListener('click', btnLoadMoreClickEvent)
+                            btnLoadMore.innerHTML = "Load More";
+                            videoContainer.appendChild(btnLoadMore);
+                        }
+                    }
+                </script>
+                <div id="video-container-p1" class="video-container">
+                    <script>
+                        let dropdownClickEvent = (list) => {
+                            for (let i = 0; i < list.length; i++) {
+                                list[i].style.display = "none";
+                            }
+                        }
+                        let dropdownList = document.querySelectorAll('.option-dropdown');
+                        window.addEventListener('click', dropdownClickEvent.bind(null, dropdownList));
+                    </script>
+                    @{
+                        p3.Models.HomeData homeData = ViewBag.homeData;
+                        p3.Models.HomeVideoListData list = homeData.GeneralList;
+                        foreach (var item in list.VideoList)
+                        {
+                            <script>
+                                videoList.push('@(item.Video.Id)');
+                            </script>
+                            string duration = p3.Controllers.Helper.CalculateDuration(item.Video.Duration);
+                            string view = p3.Controllers.Helper.CalculateView(item.Video.View);
+                            string day = p3.Controllers.Helper.CalculateDay(item.Video.Created_date);
+                            <div class="video-element" id="v_@(item.Video.Id)">
+                                <div class="video-thumbnail">
+                                    @{
+                                        string watchLink = "watch?v=" + item.Video.Id + ((item.Watch_time != 0) ? "&t=" + item.Watch_time : "");
+                                    }
+                                    <a href="@(watchLink)"><img src="/Video_Uploaded/@(item.Video.Id)/thumbnail_1.jpg" /></a>
+                                    @if (item.Watch_time != 0)
+                                    {
+                                        <div class="watch-time-bar" style="width:@( (((double)item.Watch_time) / item.Video.Duration) * 100 + "%")"></div>
+                                    }
+                                    <div class="video-length">@duration</div>
+                                </div>
+
+                                <div class="video-info">
+                                    <a class="video-onwer-avatar-a" href="channel?id=@(item.Channel_id)"><img class="video-onwer-avatar" src="@("/Content/image/" + item.Channel_avatar.Trim())" /> </a>
+                                    <div class="video-detail">
+                                        <a href="@(watchLink)" class="video-title">@item.Video.Title</a>
+                                        <a class="video-owner" href="/channel?id=@item.Channel_id">@item.Channel_name</a>
+                                        <div class="video-timenview">@view • @day</div>
+                                    </div>
+                                </div>
+
+                                <div class="option-container" onclick=' btnOptionClick("od_@(item.Video.Id)")'>
+                                    <img src="~/Content/image/option.png" />
+                                    <div style="position:relative">
+                                        <div id="od_@(item.Video.Id)" class="option-dropdown" style="display:none">
+                                            <div class="option-dropdown-element" onclick="btnHideVideoClick(event,'@(item.Video.Id)')">Hide this video </div>
+                                            <div class="option-dropdown-element" onclick="btnPlaylistClick('@(item.Video.Id)')">Add / Remove to your playlist </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <script>
+                            let addVideoElement = (video, videoContainerDiv) => {
+                                let videoElement = document.createElement('div');
+                                videoElement.classList.add('video-element');
+                                videoElement.id = 'v_' + video.Video.Id;
+
+                                let videoThumbnail = document.createElement('div');
+                                videoThumbnail.classList.add('video-thumbnail');
+                                let aLinkThumnail = document.createElement('a');
+                                aLinkThumnail.href = "watch?v=" + video.Video.Id;
+
+                                let imageThumbnail = document.createElement('img');
+                                imageThumbnail.src = "/Video_Uploaded/" + video.Video.Id + "/thumbnail_1.jpg"
+
+                                let videoLength = document.createElement('div');
+                                videoLength.classList.add('video-length');
+                                videoLength.innerHTML = CalculateDuration(video.Video.Duration);
+
+                                videoContainerDiv.appendChild(videoElement);
+                                videoThumbnail.appendChild(aLinkThumnail);
+                                videoThumbnail.appendChild(videoLength);
+                                if (video.Watch_time) {
+                                    let watchTimeBar = document.createElement('div');
+                                    watchTimeBar.classList.add('watch-time-bar');
+                                    watchTimeBar.style.width = video.Watch_time / video.Video.Duration * 100 + "%";
+                                    videoThumbnail.appendChild(watchTimeBar);
+                                }
+                                aLinkThumnail.appendChild(imageThumbnail);
+
+                                let videoInfo = document.createElement('div');
+                                videoInfo.classList.add('video-info');
+
+                                videoElement.appendChild(videoThumbnail);
+                                videoElement.appendChild(videoInfo);
+
+                                let aVideoInfo = document.createElement('a');
+                                aVideoInfo.classList.add('video-onwer-avatar-a');
+                                aVideoInfo.href = aLinkThumnail.href;
+
+                                let videoOwnerImage = document.createElement('img');
+                                videoOwnerImage.classList.add("video-onwer-avatar");
+                                videoOwnerImage.src = "/Content/image/" + video.Channel_avatar;
+
+                                let videoDetail = document.createElement('div');
+                                videoDetail.classList.add('video-detail');
+
+                                videoInfo.appendChild(aVideoInfo);
+                                videoInfo.appendChild(videoDetail);
+                                aVideoInfo.appendChild(videoOwnerImage);
+
+                                let aVideoTitle = document.createElement('a');
+                                aVideoTitle.href = '/watch?v=' + video.Video.Id;
+                                aVideoTitle.classList.add('video-title');
+                                aVideoTitle.innerHTML = video.Video.Title;
+
+                                let aChannelName = document.createElement('a');
+                                aChannelName.classList.add('video-owner');
+                                aChannelName.innerHTML = video.Channel_name;
+
+                                let videoVideoNTime = document.createElement('div');
+                                videoVideoNTime.classList.add('video-timenview');
+                                videoVideoNTime.innerHTML = calculateView(video.Video.View) + " • " + calculateDay(convertToDate(video.Video.Created_date));
+
+                                let optionContainer = document.createElement('div');
+                                optionContainer.classList.add("option-container");
+                                optionContainer.addEventListener('click', function () { btnOptionClick('od_' + video.Video.Id) })
+
+                                let optionImg = document.createElement('img');
+                                optionImg.src = '/Content/image/option.png';
+
+                                let dropdownContainer = document.createElement('div');
+                                dropdownContainer.style.position = "relative";
+
+                                let dropdownOption = document.createElement('div');
+                                dropdownOption.classList.add('option-dropdown');
+                                dropdownOption.style.display = 'none';
+                                dropdownOption.id = 'od_' + video.Video.Id;
+
+                                let dropdownOptionElement1 = document.createElement('div');
+                                dropdownOptionElement1.classList.add('option-dropdown-element');
+                                dropdownOptionElement1.innerHTML = "Hide this video";
+                                dropdownOptionElement1.onclick = (e) => {
+                                    btnHideVideoClick(e, video.Video.Id);
+                                }
+
+                                let dropdownOptionElement2 = document.createElement('div');
+                                dropdownOptionElement2.classList.add('option-dropdown-element');
+                                dropdownOptionElement2.innerHTML = "Add / Remove to your playlist";
+                                dropdownOptionElement2.onclick = (e) => {
+                                    btnPlaylistClick(video.Video.Id);
+                                }
+
+                                optionContainer.appendChild(optionImg);
+                                optionContainer.appendChild(dropdownContainer);
+                                dropdownContainer.appendChild(dropdownOption);
+                                dropdownOption.appendChild(dropdownOptionElement1);
+                                dropdownOption.appendChild(dropdownOptionElement2);
+
+                                videoElement.appendChild(optionContainer);
+
+                                videoDetail.appendChild(aVideoTitle);
+                                videoDetail.appendChild(aChannelName);
+                                videoDetail.appendChild(videoVideoNTime);
+
+                            }
+                        </script>
+                        if (!list.IsEnd)
+                        {
+                            <button id="btnLoadMore" class="btn-loadmore">Load more</button>
+                            <script>
+                                let btnLoadMore = document.querySelector('#btnLoadMore');
+                                let videoContainerP1 = document.querySelector('#video-container-p1');
+
+                              
+                                let MIN_PER_LOAD = 4;
+                                let currentLoadedNumber = 0;
+
+                                let btnLoadMoreClickEvent = async (e) => {
+                                    if (currentTagId == 0) {
+                                        currentLoadedNumber = 0;
+                                        let tempList = [];
+                                        for (let i = 0; i < 5; i++) {
+                                            let list = (await loadMore(e)).VideoList;
+                                            let listAfterFilt = removeDuplicate(list);
+                                            videoList = videoList.concat(listAfterFilt.map(x => x.Video.Id));
+                                            currentLoadedNumber += listAfterFilt.length;
+                                            tempList = tempList.concat(listAfterFilt);
+
+                                            if (currentLoadedNumber > MIN_PER_LOAD) {
+                                                tempList.splice(tempList.length - currentLoadedNumber + MIN_PER_LOAD, currentLoadedNumber - MIN_PER_LOAD);
+                                                videoList.splice(videoList.length - currentLoadedNumber + MIN_PER_LOAD, currentLoadedNumber - MIN_PER_LOAD);
+
+                                                break;
+                                            }
+                                        }
+
+                                        videoContainerP1.removeChild(e.target)
+                                        for (let i = 0; i < tempList.length; i++) {
+                                            addVideoElement(tempList[i], videoContainerP1);
+                                        }
+
+                                        if (currentLoadedNumber >= MIN_PER_LOAD) {
+                                            let btnLoadMore = document.createElement('button');
+                                            btnLoadMore.classList.add('btn-loadmore');
+                                            btnLoadMore.addEventListener('click', btnLoadMoreClickEvent)
+                                            btnLoadMore.innerHTML = "Load More";
+                                            videoContainerP1.appendChild(btnLoadMore);
+                                        }
+                                    } else {
+                                        let response = await loadMore(e);
+                                        videoContainerP1.removeChild(e.target)
+                                        for (let i = 0; i < response.VideoList.length; i++) {
+                                            addVideoElement(response.VideoList[i], videoContainerP1);
+                                        }
+
+                                        if (!response.IsEnd) {
+                                            let btnLoadMore = document.createElement('button');
+                                            btnLoadMore.classList.add('btn-loadmore');
+                                            btnLoadMore.addEventListener('click', btnLoadMoreClickEvent)
+                                            btnLoadMore.innerHTML = "Load More";
+                                            videoContainerP1.appendChild(btnLoadMore);
+                                        }
+                                    }
+                                };
+
+                                btnLoadMore.addEventListener('click', btnLoadMoreClickEvent);
+
+                                let removeDuplicate = (sample) => {
+                                    let x = sample.filter((v) => videoList.indexOf(v.Video.Id) == -1)
+                                    return x;
+                                }
+
+                                let loadMore = async (e) => {
+                                    url = currentTagId == 0 ? 'home/get_by_tag?t_id=' + currentTagId : 'home/get_by_tag?t_id=' + currentTagId + '&index=' + currentIndex;
+                                    let response = await ApiCall(url, "GET");
+                                    let r = JSON.parse(response);
+
+                                    return r;
+                                };
+                            </script>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="watch-history-container">
+                <p class="page-title">Watch History</p>
+
+                @if (Session["username"] == null)
+                {
+                    <h2> You need to  <a href="authentication/login" style="color:red">LOGIN</a>! xD</h2>
+                }
+                else
+                {
+                    <div id="video-container-p2" class="video-container">
+                        <img id="loading-page-image" src="~/Content/image/loading.gif" />
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="right">
+            <img id="right-img" src="~/Content/image/right.png" />
+        </div>
+
+        <script>
+            let videoListP2 = document.querySelector('#video-container-p2');
+            let addVideoElementToWatchHistoryPage = (video) => {
+                let videoContainer = document.createElement('div');
+                videoContainer.classList.add('video-element-p2');
+
+                let videoThumbnail = document.createElement('div');
+                videoThumbnail.classList.add('video-thumbnail-p2');
+                let aLinkThumnail = document.createElement('a');
+                aLinkThumnail.href = "watch?v=" + video.Video.Id;
+
+                let imageThumbnail = document.createElement('img');
+                imageThumbnail.src = "/Video_Uploaded/" + video.Video.Id + "/thumbnail_1.jpg"
+
+                let videoLength = document.createElement('div');
+                videoLength.classList.add('video-length-p2');
+                videoLength.innerHTML = CalculateDuration(video.Video.Duration);
+
+                videoThumbnail.appendChild(aLinkThumnail);
+                videoThumbnail.appendChild(videoLength);
+
+                if (video.Watch_time) {
+                    let watchTimeBar = document.createElement('div');
+                    watchTimeBar.classList.add('watch-time-bar');
+                    watchTimeBar.style.width = video.Watch_time / video.Video.Duration * 100 + "%";
+                    videoThumbnail.appendChild(watchTimeBar);
+                }
+
+                aLinkThumnail.appendChild(imageThumbnail);
+
+                let videoToTheRight = document.createElement('div');
+                videoToTheRight.classList.add('video-to-the-right-p2');
+
+                let aToTheRight = document.createElement('a');
+                aToTheRight.href = aLinkThumnail.href;
+
+                let videoTitle = document.createElement('div');
+                videoTitle.classList.add('video-title-p2');
+                videoTitle.innerHTML = video.Video.Title;
+
+                let videoViewnTime = document.createElement('div');
+                videoViewnTime.classList.add('video-viewntime-p2');
+
+                let spanView = document.createElement('span');
+                spanView.innerHTML = calculateView(video.Video.View);
+                let spanDot = document.createElement('span');
+                spanDot.innerHTML = ' • ';
+                let spanDay = document.createElement('span');
+                spanDay.innerHTML = calculateDay( convertToDate( video.Video.Created_date));
+
+                videoToTheRight.appendChild(aToTheRight);
+                aToTheRight.appendChild(videoTitle);
+                aToTheRight.appendChild(videoViewnTime);
+                videoViewnTime.appendChild(spanView);
+                videoViewnTime.appendChild(spanDot);
+                videoViewnTime.appendChild(spanDay);
+
+                let aChannel = document.createElement('a');
+                aChannel.href = '/channel?id=' + video.Channel_id;
+
+                let channel = document.createElement('div');
+                channel.classList.add('channel-p2');
+
+                let imageChannel = document.createElement('img');
+                imageChannel.classList.add('channel-avatar-p2');
+                imageChannel.src = "/Content/image/" + video.Channel_avatar;
+
+                let channelName = document.createElement('div');
+                channelName.classList.add('channel-name-p2');
+                channelName.innerHTML = video.Channel_name;
+
+                videoToTheRight.appendChild(aChannel);
+                aChannel.appendChild(channel);
+                channel.appendChild(imageChannel);
+                channel.appendChild(channelName);
+
+                let aVideoDescription = document.createElement('a');
+                aVideoDescription.href = aLinkThumnail.href;
+
+                let videoDescription = document.createElement('div');
+                videoDescription.classList.add('video-description-p2');
+                videoDescription.innerHTML = video.Video.Description;
+
+                videoToTheRight.appendChild(aVideoDescription);
+                aVideoDescription.appendChild(videoDescription);
+
+                videoContainer.appendChild(videoThumbnail);
+                videoContainer.appendChild(videoToTheRight);
+
+                videoListP2.appendChild(videoContainer);
+            }
+
+        </script>
+
+        <script>
+            let RECOMMENDED_PAGE = 0;
+            let WATCH_HISTORY_PAGE = 1;
+
+            let currentPage = RECOMMENDED_PAGE;
+
+            let leftBtn = document.querySelector('#left-img');
+            let rightBtn = document.querySelector('#right-img');
+
+            let recommendedPage = document.querySelector('.recommended-container');
+            let watchHistoryPage = document.querySelector('.watch-history-container');
+            let watchHistoryIndex = 0;
+            let pageList = [recommendedPage, watchHistoryPage];
+
+            watchHistoryPage.style.display = "none";
+
+            let changePage = (currentPage) => {
+                for (let i = 0; i < pageList.length; i++) {
+                    if (i == currentPage) pageList[i].style.display = "flex";
+                    else pageList[i].style.display = "none";
+                }
+
+                if (currentPage === WATCH_HISTORY_PAGE) {
+                    if (!isSecondaryPageLoaded) {
+                        videoListP2.removeChild(document.querySelector('#loading-page-image'));
+                        isSecondaryPageLoaded = true;
+                        let url = "home/watch_history";
+                        ApiCall(url, "GET")
+                            .then((r) => {
+                                response = JSON.parse(r);
+                                console.log(response);
+                                for (let i = 0; i < response.VideoList.length; i++) {
+                                    addVideoElementToWatchHistoryPage(response.VideoList[i]);
+                                }
+                                watchHistoryIndex += response.VideoList.length;
+                                if (!response.IsEnd) {
+                                    addLoadMoreButton(videoListP2);
+                                }
+                            })
+                    }
+                }
+            }
+
+            let addLoadMoreButton = (container) => {
+                let loadMore = document.createElement('button');
+                loadMore.classList.add('btn-loadmore');
+                loadMore.addEventListener('click', () => {
+                    url = 'home/watch_history?index=' + watchHistoryIndex;
+                    ApiCall(url, "GET")
+                        .then((response) => {
+                            let r = JSON.parse(response);
+                            let list = r.VideoList;
+                            console.log(r);
+                            container.removeChild(loadMore)
+
+                            for (let i = 0; i < list.length; i++) {
+                                addVideoElementToWatchHistoryPage(list[i]);
+                            }
+
+                            if (!r.IsEnd)
+                                addLoadMoreButton(container);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                })
+                loadMore.innerHTML = "Load More";
+
+                videoListP2.appendChild(loadMore);
+            }
+
+            leftBtn.addEventListener('click', () => {
+                if (currentPage == 0) currentPage = pageList.length - 1;
+                else currentPage -= 1;
+
+                changePage(currentPage);
+            })
+
+            rightBtn.addEventListener('click', () => {
+                if (currentPage == pageList.length - 1) currentPage = 0;
+                else currentPage += 1;
+
+                changePage(currentPage);
+            })
+        </script>
+    </div >
+   
+</body>
+</html>
+

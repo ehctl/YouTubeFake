@@ -1,0 +1,95 @@
+﻿
+    <div class="header-container">
+        <a href="/home">
+            <div class="header-icon">
+                <img src="~/Content/image/icon.png" />
+                <div>MyTube</div>
+            </div>
+        </a>
+
+        <div class="search-bar">
+            <input id="txtSearch" type="text" placeholder="Search..." value="@ViewBag.query"/>
+            <img id="imgSearch" src="~/Content/image/search.png" />
+        </div>
+
+        <script>
+            let searchAjax = null;
+            let searchApi = (query) => {
+                if (searchAjax != null) searchAjax.abort();
+                searchAjax = new XMLHttpRequest();
+
+                searchAjax.onreadystatechange = function(){
+                    if (this.readyState === 4) {
+                        if (this.status === 200) {
+                            //console.log(this.response);
+                        } else {
+
+                        }
+                    }
+                }
+
+                searchAjax.open("GET", "/search/api?query=" + query);
+                searchAjax.send();
+            }
+            
+        </script>
+        <script>
+            let txtSearch = document.querySelector("#txtSearch");
+
+            txtSearch.addEventListener("keypress", (e) => {
+                if (e.target.value.trim().length > 0)
+                if (e.keyCode === 13) {
+                    window.location.href = "search?query=" + e.target.value;
+                } else {
+                    searchApi(e.target.value);
+                }
+                ;
+            })
+
+            document.querySelector('#imgSearch').addEventListener("click", () => {
+                if (txtSearch.value.trim().length > 0)
+                    window.location.href = "search?query=" + txtSearch.value;
+            })
+        </script>
+
+        @{
+            string avatarSource = "/Content/image/" + Session["avatar"];
+        }
+
+        @if (Session["username"] == null)
+        {
+            <a id="login-btn" href="/authentication/login">Login</a>
+        }
+        else
+        {
+            <img class="user-avatar" src="@avatarSource" />
+            <div class="dropdown-user" style="display:none">
+                <div class="dropdown-user-greet">
+                    Hello <b>@(Session["channelName"])</b> ! Welcome to My Tube [(ツ)]
+                </div>
+                <a href="/channel?id=@(Session["userID"])" class="dropdown-user-item"> <img src="~/Content/image/channel.png" />Your channel </a>
+                <a href="/studio" class="dropdown-user-item"> <img src="~/Content/image/studio.png" />Your studio </a>
+                <a href="/setting" class="dropdown-user-item"> <img src="~/Content/image/setting.png" />Settings </a>
+                <a href="/authentication/logout" class="dropdown-user-item"> <img src="~/Content/image/logout.png" />Log Out </a>
+            </div>
+
+            <script>
+                let userAvatar = document.querySelector(".user-avatar");
+                let dropdownUser = document.querySelector(".dropdown-user");
+                userAvatar.addEventListener('click', (e) => {
+                    dropdownUser.style.display = dropdownUser.style.display === "none" ? "flex" : "none";
+
+                    e.stopPropagation();
+                })
+
+                document.querySelector('.dropdown-user-greet').addEventListener("click", (e) => {e.stopPropagation()})
+
+                window.addEventListener('click', (e) => {
+                    if (dropdownUser.style.display !== "none")
+                        dropdownUser.style.display = "none";
+                })
+            </script>
+        }
+    </div>
+
+

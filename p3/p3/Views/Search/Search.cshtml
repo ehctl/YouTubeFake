@@ -1,0 +1,117 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>My Tube</title>
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <link rel="stylesheet" href="~/Content/css/Search.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+    <script src="~/Content/js/Helper.js"></script>
+</head>
+<body>
+    @Html.Partial("../Header")
+
+    <div class="body-container">
+        <div class="video-list-container">
+            @{
+                p3.Models.SearchData data = ViewBag.data;
+            }
+            <script>
+                let subscribeBtnClick = (e, id) => {
+                    let isSubscribe = e.target.innerHTML.includes("Un") ? true : false;
+
+                    var xml = new XMLHttpRequest();
+                    xml.onreadystatechange = function () {
+                        if (this.readyState == 4) {
+                            switch (this.status) {
+                                case 200: {
+                                    e.target.innerHTML = isSubscribe ? "Subscribe" : "Unsubscribe";
+                                    let hiddenInput = e.target.parentElement.parentElement.querySelector('input');
+                                    let sub = parseInt(hiddenInput.value);
+                                    sub += isSubscribe ? -1 : 1;
+                                    hiddenInput.value = sub;
+                                    e.target.parentElement.parentElement.querySelector('.channel-sub').innerHTML = sub + " subscribers";
+                                    break;
+                                }
+                                case 400: {
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    console.log('???')
+                    xml.open('GET', "/channel/subscribe?c_id=" + id + "&op=" + (isSubscribe ? "unsubscribe" : "subscribe") );
+                    xml.send();
+                }
+            </script>
+            @foreach (p3.Models.SearchDataElement item in data.ResultList)
+            {
+                if (item.ResultType == p3.Models.SearchDataElement.CHANNEL_TYPE)
+                {
+                    <div class="channel-container">
+                        <input type="hidden" value="@(item.channelData.ChannelInfo.Subscriber)" />
+                        <a class="channel-avatar-container" href="/channel?id=@(item.channelData.ChannelInfo.Id)">
+                           <img class="channel-avatar" src="~/Content/image/@(item.channelData.ChannelInfo.Avatar)"/>
+                        </a>
+                        <a class="channel-info" href="/channel?id=@(item.channelData.ChannelInfo.Id)">
+                            <div class="channel-name">@(item.channelData.ChannelInfo.Channel_name) </div>
+                            <div class="channel-sub">@(item.channelData.ChannelInfo.Subscriber) subscribers</div>
+                        </a>
+
+                        @if( Session["userID"] != null){
+                            
+                            <div class="subscribe-button">
+                                <div onclick="subscribeBtnClick(event,@(item.channelData.ChannelInfo.Id))"> @(item.channelData.isSubscribe == false ? "Subscribe" : "Unsubscribe")</div>
+                            </div>
+                         } 
+                    </div>
+                }
+                else if (item.ResultType == p3.Models.SearchDataElement.VIDEO_TYPE)
+                {
+                    string duration = p3.Controllers.Helper.CalculateDuration(item.videoData.Video.Duration);
+                    string view = p3.Controllers.Helper.CalculateView(item.videoData.Video.View);
+                    string day = p3.Controllers.Helper.CalculateDay(item.videoData.Video.Created_date);
+                    <div class="video-container">
+                        <div class="video-thumbnail">
+                            @{
+                                string watchLink = "watch?v=" + item.videoData.Video.Id + ((item.videoData.Watch_time != 0) ? "&t=" + item.videoData.Watch_time : "");
+                            }
+                            <a href="@(watchLink)"><img src="~/Video_Uploaded/@(item.videoData.Video.Id)/thumbnail_1.jpg" /></a>
+                            @if (item.videoData.Watch_time != 0)
+                            {
+                                <div class="watch-time-bar" style="width:@( (item.videoData.Watch_time * 1.001/item.videoData.Video.Duration) * 100 + "%")"></div>
+                            }
+                            <div class="video-length">@(duration)</div>
+                        </div>
+                        <div class="video-to-the-right">
+                            <a href="@(watchLink)">
+                                <div class="video-title">@(item.videoData.Video.Title)</div>
+                                <div class="video-viewntime">
+                                    <span>@view</span> <span>•</span> <span>@day</span>
+                                </div>
+                            </a>
+                            <a href="/channel?id=@(item.videoData.Channel_id)">
+                                <div class="video-channel">
+                                    <img class="video-channel-avatar" src="~/Content/image/@(item.videoData.Channel_avatar)" />
+                                    <div class="video-channel-name"> @(item.videoData.Channel_name) </div>
+                                </div>
+                            </a>
+                            <a href="/watch?v=@(item.videoData.Video.Id)">
+                                <div class="video-description">@(item.videoData.Video.Description) </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+        </div>      
+    </div>
+
+</body>
+</html>
+
+

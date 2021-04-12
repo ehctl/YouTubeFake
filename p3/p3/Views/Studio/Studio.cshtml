@@ -1,0 +1,262 @@
+﻿@{
+    ViewBag.Title = "Index";
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>MyTube</title>
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <link rel="stylesheet" href="~/Content/css/Studio.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+    <script src="~/Content/js/jquery-3.4.1.slim.min.js"></script>
+    <script src="~/Content/js/Helper.js"></script>
+</head>
+<body>
+    @Html.Partial("../Header")
+    <div class="body-container">
+        <div class="menu-container">
+            <div id="btnStatistics" class="menu-item">
+                <img  src="~/Content/image/statistics.png"/>
+                Statistics
+            </div>
+            <div id="btnUpload" class="menu-item">
+                <img src="~/Content/image/upload.png" />
+                Upload Video
+            </div>
+        </div>
+
+        <div class="detail-container">
+            <div class="upload-container">
+                <form id='uploadVideo' class="uploadVideo" autocomplete="off">
+                    <input id='vid' type="file" name='recFile' accept="video/mp4,video/x-m4v,video/*">
+                    <video id='sampleVideo' controls style="outline: none;"></video>
+                    <input id='title' type='text' placeholder="Title for video " required>
+
+                    <div class="add-tag-container">Tags for video(at most 5 , at least 1) <img id="addTag" src="~/Content/image/add.png"/> </div>
+                    <div id="tag-container">
+                        <input id="tag0" type="text" placeholder="Tag" required />
+                    </div>
+                    <div class="tag-suggest-container">
+                    </div>
+
+                    <input type="submit" value="Upload file to server">
+                </form>
+            </div>
+
+            <script>
+                let btnAddTag = $('#addTag');
+                let form = $('#tag-container');
+                let listTagId = [];
+                let listTag = [];
+                var prevAjax = null;
+                let defaultTag = document.querySelector('#tag0');
+                let tagContainer = document.querySelector('.tag-suggest-container');
+
+                listTag.push(defaultTag);
+
+                let tagSuggestLoad = (e) => {
+                    let text = e.target.value.trim();
+                    if (text.length == 0) {
+                        showTagSearchResult([]);
+                    } else {
+                        let url = 'studio/tag_suggest?query=' + text;
+                        ApiCallWithAbort(url, "GET")
+                            .then((response) => {
+                                if (prevAjax) {
+                                    prevAjax.abort();
+                                    prevAjax = null;
+                                }
+
+                                prevAjax = response.xml;
+                                tagList = JSON.parse(response.response);
+                                showTagSearchResult(tagList);
+                            })
+                            .catch((error) => {
+
+                            })
+                    }
+                }
+                defaultTag.addEventListener('input', tagSuggestLoad);
+
+                let showTagSearchResult = (tagList) => {
+                    while (tagContainer.firstChild) {
+                        tagContainer.removeChild(tagContainer.lastChild);
+                    }
+
+                    for (let i = 0; i < tagList.length; i++) {
+                        let newTagDiv = document.createElement('div');
+                        newTagDiv.classList.add('tag-suggest');
+                        newTagDiv.addEventListener('click', tagDivClick);
+
+                        let p = document.createElement('p');
+                        p.innerHTML = tagList[i].Name;
+
+                        let newTagId = document.createElement('input');
+                        newTagId.type = 'hidden';
+                        newTagId.value = tagList[i].Id;
+
+                        newTagDiv.appendChild(p);
+                        newTagDiv.appendChild(newTagId);
+                        tagContainer.appendChild(newTagDiv);
+                    }
+                }
+
+                let tagDivClick = (e) => {
+                    listTag[listTag.length - 1].value = e.target.querySelector('p').innerHTML;
+                    listTagId.push(e.target.querySelector('input').value);
+                    listTag[listTag.length - 1].readOnly = true;
+                    console.log(listTagId);
+                    showTagSearchResult([]);
+                }
+
+                let addTag = () => {
+                    let newInputTag = document.createElement("input");
+                    newInputTag.type = "text";
+                    newInputTag.required = true;
+                    newInputTag.placeholder = "Tag";
+                    newInputTag.id = 'tag' + listTag.length;
+
+                    form.append(newInputTag);
+
+                    listTag[listTag.length - 1].readOnly = true;
+                    listTag[listTag.length - 1].removeEventListener('keypress', tagSuggestLoad);
+                    newInputTag.addEventListener('input', tagSuggestLoad);
+                    listTag.push(newInputTag);
+
+                    newInputTag.focus();
+                }
+
+                btnAddTag.click(() => {
+                    if (listTag[listTag.length - 1].value.trim().length > 0 && listTag.length <= 5) {
+                        addTag();
+                    } else {
+                        alert("You need to fill in last tag");
+                    }
+                })
+
+            </script>
+            <script>
+                $(document).ready(function () {
+                    handleDomEvent.setUpDomElement();
+                });
+
+                var handleData = {
+                    videoSource: 0,
+                }
+
+
+                var handleDomEvent = {
+                    setUpDomElement: () => {
+                        // $('#sampleVideo').hide();
+
+                        $('#uploadVideo').submit(function (e) {
+                            $('.upload-container').addClass("disable-div");
+
+                            listTag = listTag.map(div => div.value);
+
+                            if ($('#vid').val()) {
+                                var fileReader = new FileReader();
+                                fileReader.onload = function (file) {
+                                    let data = fileReader.result;
+                                    let req = new XMLHttpRequest();
+                                    let formData = new FormData();
+                                    formData.append('recfile', new Blob([data], { type: 'video/mp4' }));
+                                    formData.append('filename', document.querySelector('#vid').files[0].name)
+                                    formData.append('title', $('#title').val())
+                                    formData.append('owner', '@(Session["userID"])');
+                                    formData.append('tag', JSON.stringify(listTagId));
+                                    formData.append('duration', document.querySelector('#sampleVideo').duration);
+
+                                    req.open('POST', 'http://localhost:2907/uploadVideo', true);
+
+                                    req.onreadystatechange = () => {
+                                        if (req.readyState == 4 && req.status == 200) {
+                                            location.reload();
+                                            $('.upload-container').removeClass("disable-div");
+                                            alert('upload to server successfully');
+                                        } else if (req.readyState == 4 && req.status == 403) {
+                                            location.reload();
+                                            alert(req.responseText)
+                                        }
+                                    }
+                                    req.send(formData);
+                                }
+                                fileReader.readAsArrayBuffer(document.querySelector('#vid').files[0]);
+                            } else {
+
+                            }
+                            return false;
+                        });
+
+                        $('#vid').change(function (e) {
+                            if ($(this).val()) {
+                                handleResources.loadSource();
+                            } else {
+                                $('#sampleVideo').hide();
+                            }
+                            e.preventDefault();
+                        });
+                    },
+                }
+
+                var handleResources = {
+                    loadSource: () => {
+                        var fileReader = new FileReader();
+                        fileReader.onload = function (file) {
+                            $('#sampleVideo').attr('src', fileReader.result);
+                            $('#sampleVideo').show();
+                            console.log("Load done")
+                        };
+
+                        fileReader.onprogress = (data) => {
+                            if (data.lengthComputable) {
+                                var progress = parseInt(((data.loaded / data.total) * 100), 10);
+                                console.log(progress);
+                            }
+                        }
+                        fileReader.readAsDataURL(document.querySelector('#vid').files[0]);
+                    }
+                }
+
+                var handleStmElse = {
+                    pad: (d) => {
+                        return (d < 10) ? '0' + d.toString() : d.toString();
+                    }
+                }
+
+            </script>
+
+            <div class="statistics-container">
+                HELLO CHUA CO GI O DAY CA DAU ? :D
+            </div>
+
+            <script>
+                let sectionArr = ['.statistics-container', '.upload-container'];
+                let sectionBtnArr = ['#btnStatistics', '#btnUpload'];
+                let sectionElem = [];
+                let currentSection = @(ViewBag.pageIndex);
+
+                let btnCallback = (index) => {
+                    console.log(index)
+                    for (let i = 0; i < sectionArr.length; i++) {
+                        sectionElem[i].style.display = i !== index ? "none" : "flex";
+                    }
+                    currentSection = index;
+                }
+
+                for (let i = 0; i < sectionArr.length; i++) {
+                    let section = document.querySelector(sectionArr[i]);
+                    if (i !== currentSection)
+                        section.style.display = "none";
+
+                    sectionElem.push(section);
+                    document.querySelector(sectionBtnArr[i]).addEventListener('click', () => btnCallback(i));
+                }
+            </script>
+        </div>
+    </div>
+</body>
+</html>
+
+
+

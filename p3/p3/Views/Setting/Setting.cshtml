@@ -1,0 +1,66 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>MyTube</title>
+    <link rel="icon" href="~/Content/image/icon.png" type="image/gif" sizes="16x16">
+    <link rel="stylesheet" href="~/Content/css/Studio.css" />
+    <link rel="stylesheet" href="~/Content/css/Header.css" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+</head>
+<body>
+    @Html.Partial("../Header")
+    <div class="body-container">
+        <div class="menu-container">
+            <div id="btnVideoSetting" class="menu-item">
+                <img src="~/Content/image/videoSetting.png" />
+                Video Settings
+            </div>
+            <div id="btnPrivacy" class="menu-item">
+                <img src="~/Content/image/privacy.png" />
+                Privacy
+            </div>
+        </div>
+
+        <div class="detail-container">
+            <div class="videoSetting-container">
+                OLALA
+            </div>
+
+            <div class="privacy-container">
+                HELLO CHUA CO GI O DAY CA DAU ? :D
+            </div>
+
+            <script>
+                let sectionArr = ['.videoSetting-container', '.privacy-container'];
+                let sectionBtnArr = ['#btnVideoSetting', '#btnPrivacy'];
+                let sectionElem = [];
+                let currentSection = 1;;
+
+                let btnCallback = (index) => {
+                    console.log(index)
+                    for (let i = 0; i < sectionArr.length; i++) {
+                        sectionElem[i].style.display = i !== index ? "none" : "flex";
+                    }
+                    currentSection = index;
+                }
+
+                for (let i = 0; i < sectionArr.length; i++) {
+                    let section = document.querySelector(sectionArr[i]);
+                    if (i !== currentSection)
+                        section.style.display = "none";
+
+                    sectionElem.push(section);
+                    document.querySelector(sectionBtnArr[i]).addEventListener('click', () => btnCallback( i)); 
+                }
+            </script>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
